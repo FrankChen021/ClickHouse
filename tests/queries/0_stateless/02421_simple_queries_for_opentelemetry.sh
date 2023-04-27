@@ -9,9 +9,7 @@ CURDIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # $2 - query
 function execute_query()
 {
-  ${CLICKHOUSE_CLIENT} --opentelemetry_start_trace_probability=1 --query_id $1 -nq "
-      ${2}
-  "
+  ${CLICKHOUSE_CLIENT} --opentelemetry_start_trace_probability=1 --query_id $1 -nq "${2}"
 }
 
 # For some queries, it's not possible to know how many bytes/rows are read when tests are executed on CI,
