@@ -284,7 +284,7 @@ void TracingContextOnThread::reset() noexcept
 TracingContextHolder::TracingContextHolder(
     std::string_view _operation_name,
     TracingContext _parent_trace_context,
-    const Settings * settings_ptr,
+    float trace_probability,
     const std::weak_ptr<OpenTelemetrySpanLog> & _span_log)
 {
     /// Use try-catch to make sure the ctor is exception safe.
@@ -318,14 +318,10 @@ TracingContextHolder::TracingContextHolder(
 
         if (!_parent_trace_context.isTraceEnabled())
         {
-            if (settings_ptr == nullptr)
-                /// Skip tracing context initialization on current thread
-                return;
-
-            // Start the trace with some configurable probability.
-            std::bernoulli_distribution should_start_trace{settings_ptr->opentelemetry_start_trace_probability};
+            /// Start the tracing with some configurable probability.
+            std::bernoulli_distribution should_start_trace{trace_probability};
             if (!should_start_trace(thread_local_rng))
-                /// skip tracing context initialization on current thread
+                /// Skip tracing context initialization on current thread
                 return;
 
             while (_parent_trace_context.trace_id == UUID())

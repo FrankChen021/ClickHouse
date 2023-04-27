@@ -842,7 +842,7 @@ namespace
         /// Set up tracing context for this query on current thread
         thread_trace_context = std::make_unique<OpenTelemetry::TracingContextHolder>("GRPCServer",
             query_context->getClientInfo().client_trace_context,
-            query_context->getSettingsRef(),
+            query_context->getSettingsRef().opentelemetry_start_trace_probability,
             query_context->getOpenTelemetrySpanLog());
         thread_trace_context->root_span.kind = OpenTelemetry::SERVER;
 

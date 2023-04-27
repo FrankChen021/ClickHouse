@@ -136,7 +136,7 @@ struct TracingContextHolder
         const std::weak_ptr<OpenTelemetrySpanLog>& _log)
         : TracingContextHolder(_operation_name,
             _parent_trace_context,
-            nullptr,
+            0,
             _log)
     {
     }
@@ -145,7 +145,7 @@ struct TracingContextHolder
     TracingContextHolder(std::string_view _operation_name, const TracingContextOnThread & _parent_thread_trace_context)
         : TracingContextHolder(_operation_name,
             _parent_thread_trace_context,
-            nullptr,
+            0,
             _parent_thread_trace_context.span_log)
     {
     }
@@ -153,18 +153,7 @@ struct TracingContextHolder
     /// For servers like HTTP/TCP/GRPC to initialize tracing context on thread that process requests from clients
     TracingContextHolder(std::string_view _operation_name,
         TracingContext _parent_trace_context,
-        const Settings & _settings,
-        const std::weak_ptr<OpenTelemetrySpanLog> & _log)
-        : TracingContextHolder(_operation_name,
-            _parent_trace_context,
-            &_settings,
-            _log)
-    {
-    }
-
-    TracingContextHolder(std::string_view _operation_name,
-        TracingContext _parent_trace_context,
-        const Settings* settings_ptr,
+        float trace_probability,
         const std::weak_ptr<OpenTelemetrySpanLog> & _log);
 
     ~TracingContextHolder();

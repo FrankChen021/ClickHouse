@@ -979,6 +979,8 @@ void HTTPHandler::handleRequest(HTTPServerRequest & request, HTTPServerResponse 
             return;
         }
 
+        HTMLForm params(default_settings, request);
+
         // Parse the OpenTelemetry traceparent header.
         ClientInfo& client_info = session->getClientInfo();
         if (request.has("traceparent"))
@@ -992,11 +994,12 @@ void HTTPHandler::handleRequest(HTTPServerRequest & request, HTTPServerResponse 
             client_info.client_trace_context.tracestate = request.get("tracestate", "");
         }
 
-        // Setup tracing context for this thread
+        /// Setup tracing context for this request on this thread
         auto context = session->sessionOrGlobalContext();
+        auto trace_probability = params.getParsed<float>("opentelemetry_start_trace_probability", context->getSettingsRef().opentelemetry_start_trace_probability);
         thread_trace_context = std::make_unique<OpenTelemetry::TracingContextHolder>("HTTPHandler",
             client_info.client_trace_context,
-            context->getSettingsRef(),
+            trace_probability,
             context->getOpenTelemetrySpanLog());
         thread_trace_context->root_span.kind = OpenTelemetry::SERVER;
         thread_trace_context->root_span.addAttribute("clickhouse.uri", request.getURI());
@@ -1011,7 +1014,6 @@ void HTTPHandler::handleRequest(HTTPServerRequest & request, HTTPServerResponse 
         if (request.getVersion() == HTTPServerRequest::HTTP_1_1)
             response.setChunkedTransferEncoding(true);
 
-        HTMLForm params(default_settings, request);
         with_stacktrace = params.getParsed<bool>("stacktrace", false);
         close_session = params.getParsed<bool>("close_session", false);
         if (close_session)

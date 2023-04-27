@@ -73,6 +73,10 @@ query_id=$(${CLICKHOUSE_CLIENT} -q "select generateUUIDv4()");
 execute_query $query_id 'select * from opentelemetry_test format Null'
 check_query_span $query_id
 
+# test 5, specify trace probability on http interface
+query_id=$(${CLICKHOUSE_CLIENT} -q "select generateUUIDv4()");
+${CLICKHOUSE_CURL} -sS "${CLICKHOUSE_URL}&opentelemetry_start_trace_probability=1&query=SELECT+*+FROM+opentelemetry_test+Format+Null"
+check_query_span $query_id
 
 #
 # Tear down
